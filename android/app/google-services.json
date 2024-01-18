@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "388549687831",
+    "project_id": "fl-chat-afc72",
+    "storage_bucket": "fl-chat-afc72.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:388549687831:android:4b1c9e4fa245f4332efa52",
+        "android_client_info": {
+          "package_name": "com.example.fl_chat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpAwaTMye55fw4Lljk2TPAA3HBIqlnyTQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
