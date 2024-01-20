@@ -10,6 +10,8 @@ import '../../constants/colors.dart';
 
 class RegistrationScreen extends StatefulWidget {
   static const id = 'registration_screen';
+
+  const RegistrationScreen({super.key});
   @override
   _RegistrationScreenState createState() => _RegistrationScreenState();
 }
@@ -35,7 +37,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               Flexible(
                 child: Hero(
                   tag: 'logo',
-                  child: Container(
+                  child: SizedBox(
                     height: 200.0,
                     child: Image.asset(appLogo),
                   ),

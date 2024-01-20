@@ -28,12 +28,12 @@ class _SplashScreenState extends State<SplashScreen> {
       authModelProvider.isSignedIn
           ? Navigator.pushAndRemoveUntil(
               context,
-              CupertinoPageRoute(builder: (_) => BottomNavBar()),
+              CupertinoPageRoute(builder: (_) => const BottomNavBar()),
               (route) => false)
           : Navigator.pushReplacement(
               context,
               CupertinoPageRoute(
-                builder: (_) => WelcomeScreen(),
+                builder: (_) => const WelcomeScreen(),
               ),
             );
     });

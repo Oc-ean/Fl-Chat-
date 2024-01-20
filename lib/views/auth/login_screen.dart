@@ -11,6 +11,8 @@ import '../../constants/text_field_decoration.dart';
 class LoginScreen extends StatefulWidget {
   static const id = 'login_screen';
 
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -18,7 +20,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   // void dispose() {
   //   emailController.dispose();
@@ -66,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Flexible(
                 child: Hero(
                   tag: 'logo',
-                  child: Container(
+                  child: SizedBox(
                     height: 200.0,
                     child: Image.asset(appLogo),
                   ),

@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'login_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
-  static const String id = 'welcome_screen';
+  const WelcomeScreen({super.key});
   @override
   _WelcomeScreenState createState() => _WelcomeScreenState();
 }
@@ -67,7 +67,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   ),
                 ),
                 TypewriterAnimatedTextKit(
-                  text: ['Fl Chat'],
+                  text: const ['Fl Chat'],
                   textStyle: const TextStyle(
                     fontSize: 45.0,
                     fontWeight: FontWeight.w900,
@@ -82,7 +82,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             RoundedButton(
               onPressed: () {
                 Navigator.push(
-                    context, MaterialPageRoute(builder: (_) => LoginScreen()));
+                    context, MaterialPageRoute(builder: (_) => const LoginScreen()));
               },
               title: 'Log In',
               colour: Colors.blueAccent,
@@ -90,7 +90,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             RoundedButton(
               onPressed: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => RegistrationScreen()));
+                    MaterialPageRoute(builder: (_) => const RegistrationScreen()));
               },
               title: 'Register',
               colour: Colors.lightBlueAccent,

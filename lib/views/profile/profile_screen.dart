@@ -20,7 +20,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  static GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  static final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String name = '';
   String bio = '';
 
@@ -30,6 +30,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final authProvider = Provider.of<AuthModelProvider>(context);
     final messageProvider = Provider.of<MessageProvider>(context);
 
+    print('This image ======> ${userModel!.image}');
     return Scaffold(
       backgroundColor: bgColor,
       extendBody: true,
@@ -74,16 +75,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               //   fit: BoxFit.cover,
                               // ),
                               ),
-                          child: Center(
-                            child: Text(
-                              userModel!.name.toString().substring(0, 1),
-                              style: const TextStyle(
-                                fontSize: 60,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
+                          child: userModel.image.isEmpty &&
+                                  messageProvider.image == null
+                              ? Center(
+                                  child: Text(
+                                    userModel.name.toString().substring(0, 1),
+                                    style: const TextStyle(
+                                      fontSize: 60,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  width: 100,
+                                  height: 100,
+                                  // height: MediaQuery.of(context).size.width - 40,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.black,
+                                  ),
+                                  child: ClipOval(
+                                    child: userModel.image.isNotEmpty
+                                        ? Image.network(
+                                            userModel.image,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Image.memory(
+                                            messageProvider.image!,
+                                            fit: BoxFit.cover,
+                                          ),
+                                  ),
+                                ),
                         ),
                       ),
                       // : Center(),
@@ -108,7 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   Center(
                     child: Text(
-                      userModel!.email,
+                      userModel.email,
                       style: const TextStyle(color: Colors.white, fontSize: 16),
                     ),
                   ),
@@ -189,7 +212,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () {
                             _formKey.currentState!.save();
                             AuthService()
-                                .updateProfile(name: name, about: bio)
+                                .updateProfile(
+                                    name: name,
+                                    about: bio,
+                                    image: messageProvider.image!)
                                 .then(
                                   (value) => showSnackBar(
                                       context,

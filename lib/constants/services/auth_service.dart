@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fl_chat/constants/services/storage_service.dart';
 
 import '../../models/user_model.dart';
 
@@ -95,13 +98,16 @@ class AuthService {
     }
   }
 
-  Future<String> updateProfile({String? name, String? about}) async {
+  Future<String> updateProfile(
+      {String? name, String? about, required Uint8List image}) async {
     String res = 'Some error occurred';
     try {
       User? currentUser = auth.currentUser;
       if (currentUser != null) {
+        String photoUrl = await StorageService()
+            .uploadingImageToStorage('profilePic', image, false);
         UserModel updatedUser = UserModel(
-          image: '',
+          image: photoUrl ?? '',
           about: about ?? '',
           name: name ?? '',
           createdAt: '',

@@ -138,7 +138,7 @@ class AuthModelProvider extends ChangeNotifier {
       // for the navigation visit utils folder = > const.dart...
       Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => WelcomeScreen()),
+          MaterialPageRoute(builder: (context) => const WelcomeScreen()),
           (route) => false);
 
       showSnackBar(context, 'Sign-Out successful');
