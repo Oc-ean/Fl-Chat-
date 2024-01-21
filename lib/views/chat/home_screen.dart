@@ -3,11 +3,13 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chat/view_model/providers/auth_provider.dart';
 import 'package:fl_chat/views/chat/widgets/chat_tile.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../constants/services/auth_service.dart';
 import '../../models/user_model.dart';
+import 'chat_screen.dart';
 
 class ChatHomeScreen extends StatefulWidget {
   const ChatHomeScreen({Key? key}) : super(key: key);
@@ -187,8 +189,18 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
                                         itemCount: _list.length,
                                         physics: const BouncingScrollPhysics(),
                                         itemBuilder: (context, index) {
-                                          return ChatTile(
-                                            user: _list[index],
+                                          return InkWell(
+                                            onTap: () {
+                                              Navigator.push(
+                                                  context,
+                                                  CupertinoPageRoute(
+                                                    builder: (_) =>
+                                                        const ChatScreen(),
+                                                  ));
+                                            },
+                                            child: ChatTile(
+                                              user: _list[index],
+                                            ),
                                           );
                                         },
                                         separatorBuilder:
