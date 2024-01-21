@@ -29,12 +29,28 @@ class ChatTile extends StatelessWidget {
       child: ListTile(
         visualDensity: VisualDensity.compact,
         contentPadding: const EdgeInsets.only(left: 8, top: 10, right: 15),
-        leading: CircleAvatar(
-          radius: 30,
-          child: Text(
-            user.name.toString().substring(0, 1).toUpperCase(),
-            style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w600),
-          ),
+        leading: Container(
+          height: 55,
+          width: 55,
+          decoration:
+              const BoxDecoration(shape: BoxShape.circle, color: Colors.blue),
+          child: user.image.isEmpty
+              ? Center(
+                  child: Text(
+                    user.name.toString().substring(0, 1).toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                )
+              : ClipOval(
+                  child: Image.network(
+                    user.image,
+                    fit: BoxFit.cover,
+                  ),
+                ),
         ),
         title: Padding(
           padding: const EdgeInsets.only(bottom: 10),
