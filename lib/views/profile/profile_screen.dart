@@ -93,10 +93,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   // height: MediaQuery.of(context).size.width - 40,
                                   decoration: const BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.black,
+                                    color: Colors.grey,
                                   ),
                                   child: ClipOval(
-                                    child: userModel.image.isNotEmpty
+                                    child: userModel.image.isNotEmpty &&
+                                            messageProvider.image == null
                                         ? Image.network(
                                             userModel.image,
                                             fit: BoxFit.cover,
