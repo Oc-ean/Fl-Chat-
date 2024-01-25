@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fl_chat/models/message_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -90,7 +91,7 @@ class _ChatBubbleState extends State<ChatBubble> {
               elevation: 0.0,
               padding: const EdgeInsets.symmetric(
                 horizontal: 10,
-                vertical: 3,
+                vertical: 5,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
@@ -118,17 +119,45 @@ class _ChatBubbleState extends State<ChatBubble> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Flexible(
-                      child: Text(
-                        widget.message.message,
-                        maxLines: 50,
-                        textAlign: TextAlign.start,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: widget.isMe
-                              ? Colors.white
-                              : const Color(0xffbababa),
-                        ),
-                      ),
+                      child: widget.message.messageType == Type.text
+                          ? Text(
+                              widget.message.message,
+                              maxLines: 50,
+                              textAlign: TextAlign.start,
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: widget.isMe
+                                    ? Colors.white
+                                    : const Color(0xffbababa),
+                              ),
+                            )
+                          : Center(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 0.0),
+                                  child: CachedNetworkImage(
+                                    imageUrl: widget.message.message,
+                                    errorWidget: (context, url, error) =>
+                                        const Icon(
+                                      Icons.image,
+                                      size: 40,
+                                      color: Colors.white,
+                                    ),
+                                    placeholder: (context, source) {
+                                      return const Icon(
+                                        Icons.image,
+                                        size: 40,
+                                      );
+                                    },
+                                  ),
+                                ),
+                                // child: Image.network(
+                                //   widget.message.message,
+                                //   fit: BoxFit.contain,
+                                // ),
+                              ),
+                            ),
                     ),
                     const SizedBox(
                       width: 5,

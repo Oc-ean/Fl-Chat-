@@ -192,6 +192,21 @@ class FirebaseService {
     }
   }
 
+  static Future<void> sendImageToChat(
+      {required UserModel userModel, required Uint8List? image}) async {
+    try {
+      // Upload image to Firebase Storage
+      String imageUrl = await StorageService()
+          .uploadingImageToStorage('chatImage', image!, false);
+
+      // Create a message with the image URL and Type.image
+      await sendMessage(userModel, imageUrl, Type.image);
+    } catch (error) {
+      print("Error sending image to chat: $error");
+      // Handle the error as needed
+    }
+  }
+
   // static Stream<List<dynamic>> getLastMessage(UserModel userModel) {
   //   return firestore
   //       .collection('chats/${getConversationID(userModel.id)}/messages/')

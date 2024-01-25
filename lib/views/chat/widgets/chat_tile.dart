@@ -106,7 +106,12 @@ class _ChatTileState extends State<ChatTile> {
                 ),
                 subtitle: Text(
                   messageModel != null
-                      ? messageModel!.message
+                      ? (messageModel!.senderId != widget.user.id &&
+                              messageModel!.messageType == Type.image)
+                          ? 'you sent a photo.'
+                          : (messageModel!.messageType == Type.text
+                              ? messageModel!.message
+                              : 'Image')
                       : widget.user.about,
                   style: const TextStyle(
                     color: Colors.white,
@@ -127,7 +132,7 @@ class _ChatTileState extends State<ChatTile> {
                       height: 6,
                     ),
                     Visibility(
-                      visible: widget.user.id != messageModel!.senderId,
+                      visible: widget.user.id == messageModel!.senderId,
                       child: CircleAvatar(
                         radius: 8,
                         backgroundColor: const Color(0xFF7C01F6),

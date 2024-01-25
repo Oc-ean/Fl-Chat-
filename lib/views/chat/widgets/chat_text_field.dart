@@ -5,16 +5,24 @@ import 'package:fl_chat/constants/images.dart';
 import 'package:fl_chat/constants/services/firebase_service.dart';
 import 'package:fl_chat/models/message_model.dart';
 import 'package:fl_chat/models/user_model.dart';
+import 'package:fl_chat/view_model/providers/message_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class ChatTextField extends StatefulWidget {
   final String? currentId;
   final String? friendId;
   final UserModel user;
+  late bool showEmoji;
 
-  const ChatTextField(
-      {super.key, this.currentId, this.friendId, required this.user});
+  ChatTextField(
+      {super.key,
+      this.currentId,
+      this.friendId,
+      required this.user,
+      required this.showEmoji});
 
   @override
   _ChatTextFieldState createState() => _ChatTextFieldState();
@@ -22,9 +30,11 @@ class ChatTextField extends StatefulWidget {
 
 class _ChatTextFieldState extends State<ChatTextField> {
   final TextEditingController _controller = TextEditingController();
-  bool _showEmoji = false;
+  // bool _showEmoji = false;
   @override
   Widget build(BuildContext context) {
+    final messageProvider = Provider.of<MessageProvider>(context);
+
     return Column(
       children: [
         Container(
@@ -38,7 +48,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
             children: [
               IconButton(
                 onPressed: () {
-                  showAttachmentDialog();
+                  showAttachmentDialog(messageProvider);
                 },
                 icon: Image.asset(
                   attachmentIcon,
@@ -76,9 +86,9 @@ class _ChatTextFieldState extends State<ChatTextField> {
                           ),
                           controller: _controller,
                           onTap: () {
-                            if (_showEmoji) {
+                            if (widget.showEmoji) {
                               setState(() {
-                                _showEmoji = !_showEmoji;
+                                widget.showEmoji = !widget.showEmoji;
                               });
                             }
                           },
@@ -87,7 +97,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
                       IconButton(
                           onPressed: () {
                             setState(() {
-                              _showEmoji = !_showEmoji;
+                              widget.showEmoji = !widget.showEmoji;
                             });
                           },
                           icon: const Icon(
@@ -166,7 +176,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
           ),
         ),
         Visibility(
-          visible: _showEmoji == true,
+          visible: widget.showEmoji == true,
           child: SizedBox(
             height: 270,
             child: EmojiPicker(
@@ -188,7 +198,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
     );
   }
 
-  showAttachmentDialog() {
+  showAttachmentDialog(MessageProvider messageProvider) {
     showModalBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
@@ -209,7 +219,24 @@ class _ChatTextFieldState extends State<ChatTextField> {
                 options(
                   CupertinoIcons.camera,
                   'Camera',
-                  () {},
+                  () async {
+                    if (messageProvider.image == null) {
+                      // Assuming `selectProfilePic` is an asynchronous method
+                      await messageProvider
+                          .selectProfilePic(ImageSource.camera);
+
+                      if (messageProvider.image != null) {
+                        await FirebaseService.sendImageToChat(
+                          userModel: widget.user,
+                          image: messageProvider.image,
+                        );
+                      } else {
+                        // Handle the case where image selection was canceled or unsuccessful
+                        print('Image selection canceled or failed.');
+                      }
+                      Navigator.pop(context);
+                    }
+                  },
                 ),
                 const SizedBox(
                   height: 20,
@@ -217,7 +244,23 @@ class _ChatTextFieldState extends State<ChatTextField> {
                 options(
                   CupertinoIcons.photo,
                   'Photo',
-                  () {},
+                  () async {
+                    if (messageProvider.image == null) {
+                      // Assuming `selectProfilePic` is an asynchronous method
+                      await messageProvider.selectProfilePic();
+
+                      if (messageProvider.image != null) {
+                        await FirebaseService.sendImageToChat(
+                          userModel: widget.user,
+                          image: messageProvider.image,
+                        );
+                      } else {
+                        // Handle the case where image selection was canceled or unsuccessful
+                        print('Image selection canceled or failed.');
+                      }
+                      Navigator.pop(context);
+                    }
+                  },
                 ),
                 const SizedBox(
                   height: 10,

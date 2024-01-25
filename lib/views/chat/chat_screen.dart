@@ -165,8 +165,8 @@ class ChatScreen extends StatelessWidget {
                                 final currentUser =
                                     FirebaseAuth.instance.currentUser!;
 
-                                bool isMe =
-                                    results[index]['senderId'] == currentUser.uid;
+                                bool isMe = results[index]['senderId'] ==
+                                    currentUser.uid;
 
                                 return ChatBubble(
                                   message: _list[index],
@@ -191,7 +191,7 @@ class ChatScreen extends StatelessWidget {
                     } else if (snapshot.hasError) {
                       return Text('Error: ${snapshot.error}');
                     } else {
-                      return SizedBox();
+                      return const SizedBox();
                     }
                   },
                 ),
@@ -201,6 +201,7 @@ class ChatScreen extends StatelessWidget {
               ),
               ChatTextField(
                 user: userModel,
+                showEmoji: _showEmoji,
               ),
             ],
           ),
