@@ -1,17 +1,17 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chat/constants/images.dart';
+import 'package:fl_chat/constants/services/firebase_service.dart';
+import 'package:fl_chat/models/message_model.dart';
+import 'package:fl_chat/models/user_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ChatTextField extends StatefulWidget {
   final String? currentId;
   final String? friendId;
+  final UserModel user;
 
-  const ChatTextField({
-    super.key,
-    this.currentId,
-    this.friendId,
-  });
+  const ChatTextField(
+      {super.key, this.currentId, this.friendId, required this.user});
 
   @override
   _ChatTextFieldState createState() => _ChatTextFieldState();
@@ -101,49 +101,52 @@ class _ChatTextFieldState extends State<ChatTextField> {
                 ),
                 onTap: () async {
                   if (_controller.text.isNotEmpty) {
-                    String message = _controller.text;
-                    _controller.clear();
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(widget.currentId)
-                        .collection('messages')
-                        .doc(widget.friendId)
-                        .collection('chats')
-                        .add({
-                      "senderId": widget.currentId,
-                      "receiverId": widget.friendId,
-                      "message": message,
-                      "type": "text",
-                      "date": DateTime.now(),
-                    }).then((value) {
-                      FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(widget.currentId)
-                          .collection('messages')
-                          .doc(widget.friendId)
-                          .set({'last_msg': message, "date": DateTime.now()});
-                    });
-
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(widget.friendId)
-                        .collection('messages')
-                        .doc(widget.currentId)
-                        .collection("chats")
-                        .add({
-                      "senderId": widget.currentId,
-                      "receiverId": widget.friendId,
-                      "message": message,
-                      "type": "text",
-                      "date": DateTime.now(),
-                    }).then((value) {
-                      FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(widget.friendId)
-                          .collection('messages')
-                          .doc(widget.currentId)
-                          .set({"last_msg": message, "date": DateTime.now()});
-                    });
+                    FirebaseService.sendMessage(
+                        widget.user, _controller.text, Type.text);
+                    _controller.text = '';
+                    // String message = _controller.text;
+                    // _controller.clear();
+                    // await FirebaseFirestore.instance
+                    //     .collection('users')
+                    //     .doc(widget.currentId)
+                    //     .collection('messages')
+                    //     .doc(widget.friendId)
+                    //     .collection('chats')
+                    //     .add({
+                    //   "senderId": widget.currentId,
+                    //   "receiverId": widget.friendId,
+                    //   "message": message,
+                    //   "type": "text",
+                    //   "date": DateTime.now(),
+                    // }).then((value) {
+                    //   FirebaseFirestore.instance
+                    //       .collection('users')
+                    //       .doc(widget.currentId)
+                    //       .collection('messages')
+                    //       .doc(widget.friendId)
+                    //       .set({'last_msg': message, "date": DateTime.now()});
+                    // });
+                    //
+                    // await FirebaseFirestore.instance
+                    //     .collection('users')
+                    //     .doc(widget.friendId)
+                    //     .collection('messages')
+                    //     .doc(widget.currentId)
+                    //     .collection("chats")
+                    //     .add({
+                    //   "senderId": widget.currentId,
+                    //   "receiverId": widget.friendId,
+                    //   "message": message,
+                    //   "type": "text",
+                    //   "date": DateTime.now(),
+                    // }).then((value) {
+                    //   FirebaseFirestore.instance
+                    //       .collection('users')
+                    //       .doc(widget.friendId)
+                    //       .collection('messages')
+                    //       .doc(widget.currentId)
+                    //       .set({"last_msg": message, "date": DateTime.now()});
+                    // });
                   } else {
                     print("Can't add ");
                   }

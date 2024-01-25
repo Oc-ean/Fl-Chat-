@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../constants/services/auth_service.dart';
+import '../../constants/services/firebase_service.dart';
 import '../../constants/snackbar.dart';
 import '../../models/user_model.dart';
 import '../../views/auth/welcome_screen.dart';
@@ -16,7 +16,7 @@ class AuthModelProvider extends ChangeNotifier {
   TextEditingController usernameController = TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final AuthService _authService = AuthService();
+  final FirebaseService _authService = FirebaseService();
 
   bool _searching = false;
   bool _isSignedIn = false;
@@ -118,7 +118,8 @@ class AuthModelProvider extends ChangeNotifier {
       isLoading = false;
       notifyListeners();
     } catch (e) {
-      showSnackBar(context, e.toString());
+      showSnackBar(context, 'Email or password is invalid');
+      print('Logging Error ====>${e.toString()}');
 
       log('Login user error ===> $e <===');
     }

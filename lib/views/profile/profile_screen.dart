@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:fl_chat/constants/images.dart';
+import 'package:fl_chat/constants/services/firebase_service.dart';
 import 'package:fl_chat/view_model/providers/auth_provider.dart';
 import 'package:fl_chat/view_model/providers/message_provider.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../constants/colors.dart';
-import '../../constants/services/auth_service.dart';
 import '../../constants/snackbar.dart';
 import '../../models/user_model.dart';
 
@@ -212,7 +212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         InkWell(
                           onTap: () {
                             _formKey.currentState!.save();
-                            AuthService()
+                            FirebaseService()
                                 .updateProfile(
                                     name: name,
                                     about: bio,

@@ -1,13 +1,13 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fl_chat/constants/services/firebase_service.dart';
 import 'package:fl_chat/view_model/providers/auth_provider.dart';
 import 'package:fl_chat/views/chat/widgets/chat_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../constants/services/auth_service.dart';
 import '../../models/user_model.dart';
 import 'chat_screen.dart';
 
@@ -27,7 +27,7 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
   void initState() {
     addData();
 
-    AuthService().getSelfInfo();
+    FirebaseService().getSelfInfo();
     super.initState();
   }
 
@@ -166,7 +166,7 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
                         child: CircularProgressIndicator(),
                       )
                     : StreamBuilder(
-                        stream: AuthService.getAllUsers(),
+                        stream: FirebaseService.getAllUsers(),
                         builder: (context,
                             AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
                                 snapshot) {
@@ -194,8 +194,9 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
                                               Navigator.push(
                                                   context,
                                                   CupertinoPageRoute(
-                                                    builder: (_) =>
-                                                        const ChatScreen(),
+                                                    builder: (_) => ChatScreen(
+                                                      userModel: _list[index],
+                                                    ),
                                                   ));
                                             },
                                             child: ChatTile(
