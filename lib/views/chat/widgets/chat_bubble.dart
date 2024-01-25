@@ -89,8 +89,8 @@ class _ChatBubbleState extends State<ChatBubble> {
                   ? const Color(0xFFa54ffc)
                   : const Color(0xFF1f1f1f),
               elevation: 0.0,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
+              padding: EdgeInsets.symmetric(
+                horizontal: widget.message.messageType == Type.image ? 5 : 10,
                 vertical: 5,
               ),
               shape: RoundedRectangleBorder(
@@ -132,37 +132,51 @@ class _ChatBubbleState extends State<ChatBubble> {
                               ),
                             )
                           : Center(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(15),
-                                child: Padding(
-                                  padding: const EdgeInsets.only(bottom: 0.0),
-                                  child: CachedNetworkImage(
-                                    imageUrl: widget.message.message,
-                                    errorWidget: (context, url, error) =>
-                                        const Icon(
-                                      Icons.image,
-                                      size: 40,
-                                      color: Colors.white,
-                                    ),
-                                    placeholder: (context, source) {
-                                      return const Icon(
+                              child: Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: CachedNetworkImage(
+                                      imageUrl: widget.message.message,
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(
                                         Icons.image,
                                         size: 40,
-                                      );
-                                    },
+                                        color: Colors.white,
+                                      ),
+                                      placeholder: (context, source) {
+                                        return const Icon(
+                                          Icons.image,
+                                          size: 40,
+                                        );
+                                      },
+                                    ),
+                                    // child: Image.network(
+                                    //   widget.message.message,
+                                    //   fit: BoxFit.contain,
+                                    // ),
                                   ),
-                                ),
-                                // child: Image.network(
-                                //   widget.message.message,
-                                //   fit: BoxFit.contain,
-                                // ),
+                                  if (widget.message.read.isNotEmpty &&
+                                      widget.isMe)
+                                    const Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Icon(
+                                        Icons.done_all,
+                                        size: 16,
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                     ),
                     const SizedBox(
                       width: 5,
                     ),
-                    if (widget.message.read.isNotEmpty)
+                    if (widget.message.read.isNotEmpty &&
+                        widget.message.messageType == Type.text &&
+                        widget.isMe)
                       const Icon(
                         Icons.done_all,
                         size: 16,

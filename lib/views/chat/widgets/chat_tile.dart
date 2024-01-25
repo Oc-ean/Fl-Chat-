@@ -45,7 +45,7 @@ class _ChatTileState extends State<ChatTile> {
 
             unreadMessageCount = unreadSnapshot.data!;
             print('Unread message count ====> ${unreadMessageCount}');
-
+            print('Ids ${widget.user.id == messageModel?.senderId}');
             return Container(
               height: 89,
               width: 326,
@@ -119,6 +119,7 @@ class _ChatTileState extends State<ChatTile> {
                     letterSpacing: 0.5,
                   ),
                   maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 trailing: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -131,20 +132,21 @@ class _ChatTileState extends State<ChatTile> {
                     const SizedBox(
                       height: 6,
                     ),
-                    Visibility(
-                      visible: widget.user.id == messageModel!.senderId,
-                      child: CircleAvatar(
-                        radius: 8,
-                        backgroundColor: const Color(0xFF7C01F6),
-                        child: Center(
-                          child: Text(
-                            unreadMessageCount.toString(),
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 12),
+                    if (unreadMessageCount > 0)
+                      Visibility(
+                        visible: widget.user.id == messageModel?.senderId,
+                        child: CircleAvatar(
+                          radius: 8,
+                          backgroundColor: const Color(0xFF7C01F6),
+                          child: Center(
+                            child: Text(
+                              unreadMessageCount.toString(),
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 12),
+                            ),
                           ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
