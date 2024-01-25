@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:fl_chat/constants/images.dart';
 import 'package:fl_chat/constants/services/firebase_service.dart';
 import 'package:fl_chat/models/message_model.dart';
@@ -72,6 +75,13 @@ class _ChatTextFieldState extends State<ChatTextField> {
                             hintStyle: TextStyle(color: Colors.grey),
                           ),
                           controller: _controller,
+                          onTap: () {
+                            if (_showEmoji) {
+                              setState(() {
+                                _showEmoji = !_showEmoji;
+                              });
+                            }
+                          },
                         ),
                       ),
                       IconButton(
@@ -155,6 +165,25 @@ class _ChatTextFieldState extends State<ChatTextField> {
             ],
           ),
         ),
+        Visibility(
+          visible: _showEmoji == true,
+          child: SizedBox(
+            height: 270,
+            child: EmojiPicker(
+              textEditingController: _controller,
+              config: Config(
+                columns: 8,
+                emojiSizeMax: 26 * (Platform.isIOS ? 1.30 : 1.0),
+                bgColor: const Color(0xFF1f1f1f),
+                noRecents: const Text(
+                  'No Recents',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                  textAlign: TextAlign.center,
+                ), // Needs to be const Widge
+              ),
+            ),
+          ),
+        )
       ],
     );
   }

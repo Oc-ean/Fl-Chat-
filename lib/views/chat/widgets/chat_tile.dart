@@ -127,7 +127,7 @@ class _ChatTileState extends State<ChatTile> {
                       height: 6,
                     ),
                     Visibility(
-                      visible: widget.user.id == messageModel!.senderId,
+                      visible: widget.user.id != messageModel!.senderId,
                       child: CircleAvatar(
                         radius: 8,
                         backgroundColor: const Color(0xFF7C01F6),
@@ -160,7 +160,25 @@ class _ChatTileState extends State<ChatTile> {
     return formatter.format(dateTime);
   }
 }
-
+// String formatDateTime(String timestampString) {
+//   int timestamp = int.parse(timestampString);
+//   DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+//
+//   DateTime currentDate = DateTime.now();
+//
+//   bool isYesterday = currentDate.difference(dateTime).inDays == 1;
+//   bool withinAWeek = currentDate.difference(dateTime).inDays.abs() < 7;
+//
+//   if (isYesterday) {
+//     return 'Yesterday';
+//   } else if (withinAWeek) {
+//     final formatter = DateFormat('EEEE');
+//     return formatter.format(dateTime);
+//   } else {
+//     final formatter = DateFormat('jm');
+//     return formatter.format(dateTime);
+//   }
+// }
 // class ChatTile extends StatefulWidget {
 //   final UserModel user;
 //   const ChatTile({
