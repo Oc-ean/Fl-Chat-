@@ -5,6 +5,7 @@ import 'package:fl_chat/constants/images.dart';
 import 'package:fl_chat/constants/services/firebase_service.dart';
 import 'package:fl_chat/models/message_model.dart';
 import 'package:fl_chat/models/user_model.dart';
+import 'package:fl_chat/view_model/providers/auth_provider.dart';
 import 'package:fl_chat/view_model/providers/message_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -16,13 +17,15 @@ class ChatTextField extends StatefulWidget {
   final String? friendId;
   final UserModel user;
   late bool showEmoji;
+  late bool upLoading;
 
   ChatTextField(
       {super.key,
       this.currentId,
       this.friendId,
       required this.user,
-      required this.showEmoji});
+      required this.showEmoji,
+      required this.upLoading});
 
   @override
   _ChatTextFieldState createState() => _ChatTextFieldState();
@@ -34,6 +37,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
   @override
   Widget build(BuildContext context) {
     final messageProvider = Provider.of<MessageProvider>(context);
+    final authProvider = Provider.of<AuthModelProvider>(context);
 
     return Column(
       children: [
@@ -48,7 +52,9 @@ class _ChatTextFieldState extends State<ChatTextField> {
             children: [
               IconButton(
                 onPressed: () {
-                  showAttachmentDialog(messageProvider);
+                  if (!widget.upLoading) {
+                    showAttachmentDialog(messageProvider, authProvider);
+                  }
                 },
                 icon: Image.asset(
                   attachmentIcon,
@@ -124,49 +130,6 @@ class _ChatTextFieldState extends State<ChatTextField> {
                     FirebaseService.sendMessage(
                         widget.user, _controller.text, Type.text);
                     _controller.text = '';
-                    // String message = _controller.text;
-                    // _controller.clear();
-                    // await FirebaseFirestore.instance
-                    //     .collection('users')
-                    //     .doc(widget.currentId)
-                    //     .collection('messages')
-                    //     .doc(widget.friendId)
-                    //     .collection('chats')
-                    //     .add({
-                    //   "senderId": widget.currentId,
-                    //   "receiverId": widget.friendId,
-                    //   "message": message,
-                    //   "type": "text",
-                    //   "date": DateTime.now(),
-                    // }).then((value) {
-                    //   FirebaseFirestore.instance
-                    //       .collection('users')
-                    //       .doc(widget.currentId)
-                    //       .collection('messages')
-                    //       .doc(widget.friendId)
-                    //       .set({'last_msg': message, "date": DateTime.now()});
-                    // });
-                    //
-                    // await FirebaseFirestore.instance
-                    //     .collection('users')
-                    //     .doc(widget.friendId)
-                    //     .collection('messages')
-                    //     .doc(widget.currentId)
-                    //     .collection("chats")
-                    //     .add({
-                    //   "senderId": widget.currentId,
-                    //   "receiverId": widget.friendId,
-                    //   "message": message,
-                    //   "type": "text",
-                    //   "date": DateTime.now(),
-                    // }).then((value) {
-                    //   FirebaseFirestore.instance
-                    //       .collection('users')
-                    //       .doc(widget.friendId)
-                    //       .collection('messages')
-                    //       .doc(widget.currentId)
-                    //       .set({"last_msg": message, "date": DateTime.now()});
-                    // });
                   } else {
                     print("Can't add ");
                   }
@@ -198,7 +161,8 @@ class _ChatTextFieldState extends State<ChatTextField> {
     );
   }
 
-  showAttachmentDialog(MessageProvider messageProvider) {
+  showAttachmentDialog(
+      MessageProvider messageProvider, AuthModelProvider authProvider) {
     showModalBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
@@ -220,15 +184,14 @@ class _ChatTextFieldState extends State<ChatTextField> {
                   CupertinoIcons.camera,
                   'Camera',
                   () async {
-                    if (messageProvider.image == null) {
+                    if (authProvider.image == null) {
                       // Assuming `selectProfilePic` is an asynchronous method
-                      await messageProvider
-                          .selectProfilePic(ImageSource.camera);
+                      await authProvider.selectProfilePic(ImageSource.camera);
 
-                      if (messageProvider.image != null) {
+                      if (authProvider.image != null) {
                         await FirebaseService.sendImageToChat(
                           userModel: widget.user,
-                          image: messageProvider.image,
+                          image: authProvider.image,
                         );
                       } else {
                         // Handle the case where image selection was canceled or unsuccessful
@@ -245,20 +208,27 @@ class _ChatTextFieldState extends State<ChatTextField> {
                   CupertinoIcons.photo,
                   'Photo',
                   () async {
-                    if (messageProvider.image == null) {
+                    if (messageProvider.selectMoreImage != null ||
+                        messageProvider.selectMoreImage!.isEmpty) {
+                      await messageProvider.selectMultipleImage();
+                      Navigator.pop(context);
                       // Assuming `selectProfilePic` is an asynchronous method
-                      await messageProvider.selectProfilePic();
-
-                      if (messageProvider.image != null) {
-                        await FirebaseService.sendImageToChat(
-                          userModel: widget.user,
-                          image: messageProvider.image,
-                        );
+                      print(
+                          'Select more Image ====> ${messageProvider.selectMoreImage}');
+                      if (messageProvider.selectMoreImage != null &&
+                          messageProvider.selectMoreImage!.isNotEmpty) {
+                        for (var i in messageProvider.selectMoreImage!) {
+                          setState(() => widget.upLoading = true);
+                          await FirebaseService.sendImageToChat(
+                            userModel: widget.user,
+                            image: i,
+                          );
+                          setState(() => widget.upLoading = false);
+                        }
                       } else {
                         // Handle the case where image selection was canceled or unsuccessful
                         print('Image selection canceled or failed.');
                       }
-                      Navigator.pop(context);
                     }
                   },
                 ),

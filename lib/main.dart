@@ -5,14 +5,35 @@ import 'package:fl_chat/views/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'constants/app_life_cycle.dart';
+import 'constants/services/firebase_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  /// Init HiveDB
   await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    WidgetsBinding.instance!.addObserver(
+      LifecycleEventHandler(
+        detachedCallBack: () => FirebaseService.userActiveStatus(false),
+        resumeCallBack: () => FirebaseService.userActiveStatus(true),
+      ),
+    );
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

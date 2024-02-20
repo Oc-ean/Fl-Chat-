@@ -12,3 +12,22 @@ pickImage(ImageSource source) async {
     print('No image selected');
   }
 }
+
+Future<List<List<int>>> pickImages() async {
+  final ImagePicker imagePicker = ImagePicker();
+  List<XFile>? files = await imagePicker.pickMultiImage(imageQuality: 70);
+
+  if (files.isNotEmpty) {
+    for (XFile file in files) {
+      log('Image Path ====> ${file.path} --- Type ${file.mimeType}');
+    }
+
+    List<Future<List<int>>> imageBytesFutures =
+        files.map((XFile file) => file.readAsBytes()).toList();
+
+    return await Future.wait(imageBytesFutures);
+  } else {
+    print('No image selected');
+    return [];
+  }
+}

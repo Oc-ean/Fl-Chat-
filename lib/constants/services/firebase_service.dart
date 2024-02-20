@@ -1,7 +1,9 @@
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fl_chat/constants/services/storage_service.dart';
 import 'package:fl_chat/models/message_model.dart';
 
@@ -12,8 +14,9 @@ class FirebaseService {
   static FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   static User get user => auth.currentUser!;
+  static FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
 
-  UserModel? userModel;
+  static UserModel? userModel;
 
   /// crea ting user fucntion..
   Future<String> createUser({
@@ -32,19 +35,28 @@ class FirebaseService {
         UserCredential userCredential = await auth
             .createUserWithEmailAndPassword(email: email, password: password!);
 
-        UserModel userModel = UserModel(
-            image: '',
-            about: bio!,
-            name: userName!,
-            createdAt: time,
-            isOnline: false,
-            id: userCredential.user!.uid,
-            lastActive: time,
-            email: email,
-            pushToken: '');
-        firestore.collection('users').doc(userCredential.user!.uid).set(
-              userModel.toJson(),
-            );
+        await firestore.collection('users').doc(userCredential.user!.uid).set({
+          "image": '',
+          "about": bio!,
+          "name": userName,
+          "createdAt": time,
+          "isOnline": false,
+          "id": userCredential.user!.uid,
+          "lastActive": time,
+          "email": email,
+          "pushToken": "",
+        });
+        DocumentSnapshot<Map<String, dynamic>> userDoc = await firestore
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .get();
+
+        // Update the UserModel
+        if (userDoc.exists) {
+          UserModel newUser = UserModel.fromJson(userDoc.data()!);
+          // Update the userModel property
+          userModel = newUser;
+        }
         res = 'Successful';
       }
     } on FirebaseAuthException catch (error) {
@@ -79,6 +91,7 @@ class FirebaseService {
   }
 
   static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers() {
+    getFirebaseMessagingToken();
     return firestore
         .collection('users')
         .where('id', isNotEqualTo: auth.currentUser!.uid)
@@ -92,19 +105,19 @@ class FirebaseService {
         .snapshots();
   }
 
-  Future<void> getSelfInfo() async {
-    try {
-      await firestore.collection('users').doc(user!.uid).get().then((user) {
-        if (user.exists) {
-          final existedUser = UserModel.fromJson(user.data()!);
-        } else {
-          createUser().then((value) => getSelfInfo());
-        }
-      });
-    } catch (e) {
-      print('Getting self info ====> $e');
-    }
-  }
+  // Future<void> getSelfInfo() async {
+  //   try {
+  //     await firestore.collection('users').doc(user.uid).get().then((user) {
+  //       if (user.exists) {
+  //         final existedUser = UserModel.fromJson(user.data()!);
+  //       } else {
+  //         createUser().then((value) => getSelfInfo());
+  //       }
+  //     });
+  //   } catch (e) {
+  //     print('Getting self info ====> $e');
+  //   }
+  // }
 
   Future<String> updateProfile(
       {String? name, String? about, required Uint8List image}) async {
@@ -171,6 +184,11 @@ class FirebaseService {
     final ref = firestore
         .collection('chats/${getConversationID(userModel.id)}/messages/');
     await ref.doc(time).set(chatMessage.toJson());
+    // if (userModelBox != null) {
+    //   final sentMessagesBox =
+    //   Hive.box<MessageModel>('sentMessages_${userModel.id}');
+    //   sentMessagesBox.put(time, chatMessage);
+    // }
     // sendPushNotification(chatUser, type == Type.text ? msg : 'image'));
   }
 
@@ -207,37 +225,14 @@ class FirebaseService {
     }
   }
 
-  // static Stream<List<dynamic>> getLastMessage(UserModel userModel) {
-  //   return firestore
-  //       .collection('chats/${getConversationID(userModel.id)}/messages/')
-  //       .orderBy('sent', descending: true)
-  //       .snapshots()
-  //       .map((QuerySnapshot<Map<String, dynamic>> snapshot) {
-  //     final List<dynamic> result = [];
-  //     final List<MessageModel> messages = snapshot.docs
-  //         .map((doc) => MessageModel.fromJson(doc.data()))
-  //         .toList();
-  //
-  //     // Filter unread messages
-  //     final List<MessageModel> unreadMessages = messages
-  //         .where((message) => message.read == null || message.read.isEmpty)
-  //         .toList();
-  //
-  //     print('Unread messages: ${unreadMessages.toString()}');
-  //
-  //     // Get the last message
-  //     MessageModel? lastMessage;
-  //     if (messages.isNotEmpty) {
-  //       lastMessage = messages.first;
-  //     }
-  //
-  //     // Add last message and unread message count to the result
-  //     result.add(lastMessage);
-  //     result.add(unreadMessages.length);
-  //
-  //     return result;
-  //   });
-  // }
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getUserInfo(
+      UserModel userModel) {
+    return firestore
+        .collection('users')
+        .where('id', isEqualTo: userModel.id)
+        .snapshots();
+  }
+
   static Stream<QuerySnapshot<Map<String, dynamic>>> getLastMessage(
       UserModel userModel) {
     return firestore
@@ -260,6 +255,26 @@ class FirebaseService {
       print("Error getting unread message count: $error");
       return Stream.value(0); // Handle the error as needed
     }
+  }
+
+  static Future<void> userActiveStatus(bool isOnline) async {
+    if (user != null) {
+      await firestore.collection('users').doc(user.uid).update({
+        "isOnline": isOnline,
+        "lastActive": DateTime.now().millisecondsSinceEpoch,
+        "pushToken": userModel!.pushToken,
+      });
+    }
+  }
+
+  static Future<void> getFirebaseMessagingToken() async {
+    await firebaseMessaging.requestPermission();
+    await firebaseMessaging.getToken().then((value) {
+      if (value != null) {
+        userModel!.pushToken = value;
+        log('Token ====> $value');
+      }
+    });
   }
 }
 

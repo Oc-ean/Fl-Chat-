@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chat/constants/services/firebase_service.dart';
+import 'package:fl_chat/constants/time_format.dart';
 import 'package:fl_chat/models/message_model.dart';
 import 'package:fl_chat/models/user_model.dart';
 import 'package:fl_chat/views/chat/widgets/chat_bubble.dart';
@@ -12,10 +13,18 @@ import 'package:flutter/material.dart';
 
 import 'contact_info.dart';
 
-class ChatScreen extends StatelessWidget {
+class ChatScreen extends StatefulWidget {
   final UserModel userModel;
   final User? user;
   const ChatScreen({super.key, required this.userModel, this.user});
+
+  @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  bool _showEmoji = false;
+  bool _upLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +38,6 @@ class ChatScreen extends StatelessWidget {
     //   Messages(message: 'Okay , can you be my mentor? ', isMe: true),
     // ];
     List<MessageModel> _list = [];
-    bool _showEmoji = false;
 
     return GestureDetector(
       onTap: () {
@@ -41,64 +49,90 @@ class ChatScreen extends StatelessWidget {
           leadingWidth: 33,
           backgroundColor: const Color(0xFF1f1f1f),
           elevation: 0.0,
-          title: InkWell(
-            onTap: () {
-              Navigator.push(
-                  context,
-                  CupertinoPageRoute(
-                    builder: (_) => const ContactInfo(),
-                  ));
-            },
-            child: Row(
-              children: [
-                Container(
-                  height: 40,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    color: userModel.image.isEmpty ? Colors.blue : Colors.grey,
-                    shape: BoxShape.circle,
-                  ),
-                  child: userModel.image.isEmpty
-                      ? Center(
-                          child: Text(
-                            userModel.name.toString().substring(0, 1),
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 17),
-                          ),
-                        )
-                      : ClipOval(
-                          child: Image.network(
-                            userModel.image,
-                            fit: BoxFit.fitHeight,
-                          ),
+          title: StreamBuilder(
+              stream: FirebaseService.getUserInfo(widget.userModel),
+              builder: (context,
+                  AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+                if (!snapshot.hasData || snapshot.data == null) {
+                  return Container();
+                }
+                final results = snapshot.data!.docs;
+                final list =
+                    results.map((e) => UserModel.fromJson(e.data())).toList();
+
+                log('User info list ===> $_list');
+                log('User results list ===> $results');
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (_) => const ContactInfo(),
+                        ));
+                  },
+                  child: Row(
+                    children: [
+                      Container(
+                        height: 40,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          color: widget.userModel.image.isEmpty
+                              ? Colors.blue
+                              : Colors.grey,
+                          shape: BoxShape.circle,
                         ),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      userModel.name,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white54,
+                        child: widget.userModel.image.isEmpty
+                            ? Center(
+                                child: Text(
+                                  widget.userModel.name
+                                      .toString()
+                                      .substring(0, 1),
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 17),
+                                ),
+                              )
+                            : ClipOval(
+                                child: Image.network(
+                                  widget.userModel.image,
+                                  fit: BoxFit.fitHeight,
+                                ),
+                              ),
                       ),
-                    ),
-                    const Text(
-                      'last seen : 4:50 pm',
-                      style: TextStyle(
-                        fontSize: 11,
-                        height: 1.5,
+                      const SizedBox(
+                        width: 10,
                       ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.userModel.name,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white54,
+                            ),
+                          ),
+                          Text(
+                            list.isNotEmpty
+                                ? list[0].isOnline
+                                    ? 'Online'
+                                    : getLastActiveTime(
+                                        context: context,
+                                        lastActive: list[0].lastActive)
+                                : getLastActiveTime(
+                                    context: context,
+                                    lastActive: widget.userModel.lastActive),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                );
+              }),
         ),
         body: Container(
           decoration: const BoxDecoration(
@@ -144,7 +178,7 @@ class ChatScreen extends StatelessWidget {
                 //     ),
                 //   ),
                 child: StreamBuilder(
-                  stream: FirebaseService.getAllMessages(userModel),
+                  stream: FirebaseService.getAllMessages(widget.userModel),
                   builder: (context,
                       AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
                           snapshot) {
@@ -158,7 +192,7 @@ class ChatScreen extends StatelessWidget {
                       log('Fire list ===> $results');
                       return _list.isNotEmpty
                           ? ListView.builder(
-                              reverse: true,
+                              // reverse: true,
                               clipBehavior: Clip.none,
                               itemCount: _list.length,
                               itemBuilder: (context, index) {
@@ -196,12 +230,23 @@ class ChatScreen extends StatelessWidget {
                   },
                 ),
               ),
+              if (_upLoading)
+                const Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  ),
+                ),
               const SizedBox(
                 height: 30,
               ),
               ChatTextField(
-                user: userModel,
+                user: widget.userModel,
                 showEmoji: _showEmoji,
+                upLoading: _upLoading,
               ),
             ],
           ),

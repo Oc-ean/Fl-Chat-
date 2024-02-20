@@ -2,11 +2,9 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chat/constants/services/firebase_service.dart';
-import 'package:fl_chat/view_model/providers/auth_provider.dart';
 import 'package:fl_chat/views/chat/widgets/chat_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../../models/user_model.dart';
 import 'chat_screen.dart';
@@ -23,28 +21,25 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  @override
-  void initState() {
-    addData();
-
-    FirebaseService().getSelfInfo();
-    super.initState();
-  }
-
-  addData() async {
-    AuthModelProvider userModel =
-        Provider.of<AuthModelProvider>(context, listen: false);
-    await userModel.updatingUserValue();
-  }
+  // @override
+  // void initState() {
+  //   addData();
+  // }
+  //
+  // addData() {
+  //   AuthModelProvider userModel =
+  //       Provider.of<AuthModelProvider>(context, listen: false);
+  //   userModel.updatingUserValue();
+  // }
 
   @override
   Widget build(BuildContext context) {
     // final auth = FirebaseAuth.instance.currentUser!.uid;
-    // final authProvider = Provider.of<AuthModelProvider>(context, listen: false);
-    UserModel? userModel = Provider.of<AuthModelProvider>(
-      context,
-    ).getUser;
-    log('Testing  ===> ${userModel.toString()}');
+
+    // User? userModel = Provider.of<AuthModelProvider>(
+    //   context,
+    // ).getUser;
+    // log('Testing  ===> ${authProvider.toString()}');
     log('Printing');
     return Scaffold(
       appBar: PreferredSize(
@@ -161,79 +156,73 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
                     ),
                   ),
                 ),
-                userModel == null
-                    ? const Center(
-                        child: CircularProgressIndicator(),
-                      )
-                    : StreamBuilder(
-                        stream: FirebaseService.getAllUsers(),
-                        builder: (context,
-                            AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
-                                snapshot) {
-                          if (snapshot.hasData) {
-                            final results = snapshot.data!.docs;
-                            _list = results
-                                .map((e) => UserModel.fromJson(e.data()))
-                                .toList();
+                StreamBuilder(
+                    stream: FirebaseService.getAllUsers(),
+                    builder: (context,
+                        AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                            snapshot) {
+                      if (snapshot.hasData) {
+                        final results = snapshot.data!.docs;
+                        _list = results
+                            .map((e) => UserModel.fromJson(e.data()))
+                            .toList();
 
-                            log('Snapshot list ===> $_list');
-                            log('Fire list ===> $results');
+                        log('Snapshot list ===> $_list');
+                        log('Fire list ===> $results');
 
-                            return _list.isNotEmpty
-                                ? Expanded(
-                                    child: SingleChildScrollView(
-                                      child: ListView.separated(
-                                        clipBehavior: Clip.none,
-                                        padding: const EdgeInsets.only(top: 10),
-                                        shrinkWrap: true,
-                                        itemCount: _list.length,
-                                        physics: const BouncingScrollPhysics(),
-                                        itemBuilder: (context, index) {
-                                          return InkWell(
-                                            onTap: () {
-                                              Navigator.push(
-                                                  context,
-                                                  CupertinoPageRoute(
-                                                    builder: (_) => ChatScreen(
-                                                      userModel: _list[index],
-                                                    ),
-                                                  ));
-                                            },
-                                            child: ChatTile(
-                                              user: _list[index],
-                                            ),
-                                          );
+                        return _list.isNotEmpty
+                            ? Expanded(
+                                child: SingleChildScrollView(
+                                  child: ListView.separated(
+                                    clipBehavior: Clip.none,
+                                    padding: const EdgeInsets.only(top: 10),
+                                    shrinkWrap: true,
+                                    itemCount: _list.length,
+                                    physics: const BouncingScrollPhysics(),
+                                    itemBuilder: (context, index) {
+                                      return InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              CupertinoPageRoute(
+                                                builder: (_) => ChatScreen(
+                                                  userModel: _list[index],
+                                                ),
+                                              ));
                                         },
-                                        separatorBuilder:
-                                            (BuildContext context, int index) {
-                                          return const SizedBox(
-                                            height: 10,
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  )
-                                : SizedBox(
-                                    height:
-                                        MediaQuery.of(context).size.height / 2,
-                                    width: 400,
-                                    child: const Center(
-                                      child: Text(
-                                        'No Connections Found',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.white,
+                                        child: ChatTile(
+                                          user: _list[index],
                                         ),
-                                      ),
+                                      );
+                                    },
+                                    separatorBuilder:
+                                        (BuildContext context, int index) {
+                                      return const SizedBox(
+                                        height: 10,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              )
+                            : SizedBox(
+                                height: MediaQuery.of(context).size.height / 2,
+                                width: 400,
+                                child: const Center(
+                                  child: Text(
+                                    'No Connections Found',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.white,
                                     ),
-                                  );
-                          } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else {
-                            return const Center(
-                                child: CircularProgressIndicator());
-                          }
-                        }),
+                                  ),
+                                ),
+                              );
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                    }),
               ],
             ),
           ),

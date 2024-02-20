@@ -145,9 +145,8 @@ class _ChatBubbleState extends State<ChatBubble> {
                                         color: Colors.white,
                                       ),
                                       placeholder: (context, source) {
-                                        return const Icon(
-                                          Icons.image,
-                                          size: 40,
+                                        return CircularProgressIndicator(
+                                          strokeWidth: 2,
                                         );
                                       },
                                     ),

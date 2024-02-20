@@ -125,10 +125,11 @@ class _ChatTileState extends State<ChatTile> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      formatDateTime(messageModel!.sent),
-                      style: const TextStyle(color: Color(0xFF7C01F6)),
-                    ),
+                    if (messageModel != null)
+                      Text(
+                        formatDateTime(messageModel!.sent),
+                        style: const TextStyle(color: Color(0xFF7C01F6)),
+                      ),
                     const SizedBox(
                       height: 6,
                     ),
